@@ -93,6 +93,16 @@ func TestRichTextSection_UnmarshalJSON(t *testing.T) {
 			nil,
 		},
 		{
+			[]byte(`{"type": "rich_text_quote","elements":[{"type":"text","text":"hi"}]}`),
+			RichTextSection{
+				Type: RTEQuote,
+				Elements: []RichTextSectionElement{
+					&RichTextSectionTextElement{Type: RTSEText, Text: "hi"},
+				},
+			},
+			nil,
+		},
+		{
 			[]byte(`{"type": "rich_text_section","elements":[]}`),
 			RichTextSection{
 				Type:     RTESection,

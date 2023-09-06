@@ -38,7 +38,7 @@ func (e *RichTextBlock) UnmarshalJSON(b []byte) error {
 		}
 		var elem RichTextElement
 		switch s.Type {
-		case RTESection:
+		case RTESection, RTEQuote:
 			elem = &RichTextSection{}
 		case RTEList:
 			elem = &RichTextList{}
@@ -143,7 +143,7 @@ func (e *RichTextList) UnmarshalJSON(b []byte) error {
 		}
 		var elem RichTextElement
 		switch s.Type {
-		case RTESection:
+		case RTESection, RTEQuote:
 			elem = &RichTextSection{}
 		case RTEList:
 			elem = &RichTextList{}
@@ -179,13 +179,17 @@ func (s RichTextSection) RichTextElementType() RichTextElementType {
 
 func (e *RichTextSection) UnmarshalJSON(b []byte) error {
 	var raw struct {
-		RawElements []json.RawMessage `json:"elements"`
+		Type        RichTextElementType `json:"type"`
+		RawElements []json.RawMessage   `json:"elements"`
 	}
 	if string(b) == "{}" {
 		return nil
 	}
 	if err := json.Unmarshal(b, &raw); err != nil {
 		return err
+	}
+	if raw.Type == "" {
+		raw.Type = RTESection
 	}
 	elems := make([]RichTextSectionElement, 0, len(raw.RawElements))
 	for _, r := range raw.RawElements {
@@ -230,7 +234,7 @@ func (e *RichTextSection) UnmarshalJSON(b []byte) error {
 		elems = append(elems, elem)
 	}
 	*e = RichTextSection{
-		Type:     RTESection,
+		Type:     raw.Type,
 		Elements: elems,
 	}
 	return nil
